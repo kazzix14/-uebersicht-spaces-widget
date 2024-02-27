@@ -4,13 +4,17 @@ export const init = (dispatch) => {
   updateSpaces(dispatch);
 };
 
+const EV_FETCH_SPACES = "FETCH_SPACES";
+const EV_FETCH_SPACE_FOCUS = "FETCH_SPACE_FOCUS";
+
 // export const command = "yabai -m query --spaces | jq  '[.[] | select(.display == 2)] | length'";
 export const command = (dispatch) => {
+  // current space
   run("/opt/homebrew/bin/yabai -m query --spaces --space | /opt/homebrew/bin/jq \".id\"").then((result) => {
     const data = {
       focusedSpaceId: JSON.parse(result),
     }
-    dispatch({type: "UPDATE FOCUS", data});
+    dispatch({type: EV_FETCH_SPACE_FOCUS, data});
   });
 
   if (Math.random() < 0.06) {
@@ -48,7 +52,29 @@ const updateSpaces = (dispatch) => {
 };
 
 // the refresh frequency in milliseconds
-export const refreshFrequency = 60;
+export const refreshFrequency = 100;
+
+export const initialState = {
+  spaces: [],
+};
+
+export const updateState = (event, previousState) => {
+  switch(event.type) {
+    case EV_FETCH_SPACES:
+      return {
+        ...previousState,
+        spaces: event.data.spaces,
+      };
+    case EV_FETCH_SPACE_FOCUS:
+      return {
+        ...previousState,
+        focusedSpaceId: event.data.focusedSpaceId,
+      };
+    default: {
+      return previousState;
+    }
+  }
+};
 
 // the CSS style for this widget, written using Emotion
 // https://emotion.sh/
@@ -139,28 +165,6 @@ const Window = styled('span')`
   border: 1px solid white;
   text-overflow: ellipsis;
 `;
-
-export const initialState = {
-  spaces: [],
-};
-
-export const updateState = (event, previousState) => {
-  switch(event.type) {
-    case 'UPDATE SPACES':
-      return {
-        ...previousState,
-        spaces: event.data.spaces,
-      };
-    case 'UPDATE FOCUS':
-      return {
-        ...previousState,
-        focusedSpaceId: event.data.focusedSpaceId,
-      };
-    default: {
-      return previousState;
-    }
-  }
-};
 
 const onSpaceClick = (space, dispatch) => {
   run(`/opt/homebrew/bin/yabai -m space --focus ${space.index}`);
