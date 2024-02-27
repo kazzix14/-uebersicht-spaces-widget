@@ -46,7 +46,7 @@ const updateSpaces = (dispatch) => {
         spaces: spaces
       }
 
-      dispatch({type: "UPDATE SPACES", data});
+      dispatch({type: EV_FETCH_SPACES, data});
     });
   });
 };
